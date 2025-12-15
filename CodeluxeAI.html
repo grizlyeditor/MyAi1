@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeluxeAI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Google Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        accent: {
+                            500: '#10b981',
+                            600: '#059669',
+                        },
+                        gray: {
+                            50: '#f9fafb',
+                            100: '#f3f4f6',
+                            200: '#e5e7eb',
+                            300: '#d1d5db',
+                            400: '#9ca3af',
+                            500: '#6b7280',
+                            600: '#4b5563',
+                            700: '#374151',
+                            800: '#1f2937',
+                            900: '#111827',
+                            950: '#030712',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        html {
+            @apply bg-gray-50 dark:bg-gray-900;
+            background-color: #f9fafb;
+        }
+        html.dark {
+            background-color: #111827;
+        }
+        body {
+            @apply bg-gray-50 dark:bg-gray-900;
+            min-height: 100vh;
+            background-color: #f9fafb;
+        }
+        body.dark {
+            background-color: #111827;
+        }
+        #sidebar {
+            @apply bg-white dark:bg-gray-800;
+            background-color: #ffffff;
+        }
+        .dark #sidebar {
+            background-color: #1f2937;
+        }
+        .flex-1.flex.flex-col.overflow-hidden {
+            @apply bg-gray-50 dark:bg-gray-900;
+            background-color: #f9fafb;
+        }
+        .dark .flex-1.flex.flex-col.overflow-hidden {
+            background-color: #111827;
+        }
+        .md\:hidden.flex.items-center {
+            @apply bg-white dark:bg-gray-800;
+            background-color: #ffffff;
+        }
+        .dark .md\:hidden.flex.items-center {
+            background-color: #1f2937;
+        }
+        .bg-white.dark\:bg-gray-800 {
+            background-color: #ffffff;
+        }
+        .dark .bg-white.dark\:bg-gray-800 {
+            background-color: #1f2937;
+        }
+        .message-content p {
+            margin-bottom: 0.5rem;
+        }
+        .message-content p:last-child {
+            margin-bottom: 0;
+        }
+        .message-content ul, .message-content ol {
+            margin-left: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .message-content li {
+            margin-bottom: 0.25rem;
+        }
+        .message-content pre {
+            @apply bg-gray-100 dark:bg-gray-800 p-3 rounded-md overflow-x-auto mb-2 text-sm;
+        }
+        .message-content code:not(pre code) {
+            @apply bg-gray-200 dark:bg-gray-700 px-1 py-0.5 rounded text-sm;
+        }
+        .message-content pre code {
+            background-color: transparent;
+            padding: 0;
+            font-size: inherit;
+        }
+        .message-content img {
+            max-width: 100%;
+            height: auto;
+            @apply rounded-lg my-2;
+        }
+        .message-content a {
+            @apply text-primary-500 dark:text-primary-400 hover:underline;
+        }
+        .typing-indicator span {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            @apply bg-gray-500 dark:bg-gray-400;
+            margin-right: 4px;
+            animation: typing 1.4s infinite ease-in-out;
+        }
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            @apply bg-gray-100 dark:bg-gray-800 rounded-full;
+        }
+        ::-webkit-scrollbar-thumb {
+            @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            @apply bg-gray-400 dark:bg-gray-500;
+        }
+    </style>
+</head>
+<body class="font-sans antialiased">
+    <div class="fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 opacity-0 pointer-events-none md:hidden" id="sidebar-overlay"></div>
+    <div class="flex h-screen overflow-hidden">
+        <div class="fixed inset-y-0 left-0 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-50 transform -translate-x-full transition-transform duration-300 ease-in-out md:relative md:translate-x-0" id="sidebar">
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center space-x-2">
+                        <img src="https://i.ibb.co/PGM0QsKH/x.jpg"
+                             alt="CodeluxeAI Bot Logo"
+                             class="w-8 h-8 rounded-full object-cover"
+                             onerror="this.onerror=null; this.src='https://placehold.co/32x32/800080/white?text=AI';">
+                        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">CodeluxeAI</h2>
+                    </div>
+                    <button class="md:hidden text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" id="close-sidebar">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+                <button class="mx-4 mt-4 flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 text-gray-700 dark:text-gray-200 font-medium" id="new-chat-btn">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>New conversation</span>
+                </button>
+                <div class="flex-1 overflow-y-auto p-4 space-y-2">
+                    <!-- Removed "No recent conversations" and its icon -->
+                </div>
+                <div class="p-4 border-t border-gray-200 dark:border-gray-700">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center" style="background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);">
+                                <i data-lucide="user" class="w-4 h-4 text-white"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Anonymous</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Free Plan</p>
+                            </div>
+                        </div>
+                        <button id="theme-toggle" class="p-2 rounded-md text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200">
+                            <i data-lucide="sun" class="w-5 h-5" id="theme-icon-sun"></i>
+                            <i data-lucide="moon" class="w-5 h-5 hidden" id="theme-icon-moon"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex-1 flex flex-col overflow-hidden md:ml-64">
+            <div class="md:hidden flex items-center justify-between p-4 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700">
+                <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" id="open-sidebar">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+                <div class="flex items-center space-x-2">
+                    <img src="https://i.ibb.co/PGM0QsKH/x.jpg"
+                         alt="CodeluxeAI Bot Logo"
+                         class="w-6 h-6 rounded-full object-cover"
+                         onerror="this.onerror=null; this.src='https://placehold.co/24x24/800080/white?text=AI';">
+                    <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">CodeluxeAI</h2>
+                </div>
+                <button class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200" id="new-chat-mobile">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 p-4" id="chat-container">
+                <div class="max-w-3xl mx-auto mb-8 text-center" id="welcome-message">
+                    <img src="https://i.ibb.co/PGM0QsKH/x.jpg"
+                         alt="CodeluxeAI Bot Large"
+                         class="w-16 h-16 rounded-full object-cover mx-auto mb-4"
+                         onerror="this.onerror=null; this.src='https://placehold.co/64x64/800080/white?text=AI';">
+                    <h1 class="text-2xl font-medium text-gray-900 dark:text-gray-100 mb-2">Hello! I'm CodeluxeAI</h1>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">How can I help you today?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto" id="suggestion-buttons">
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Explain quantum computing in simple terms">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Explain quantum computing</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">In simple terms</p>
+                        </button>
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Suggest fun activities for a rainy day">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Suggest fun activities</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">For a rainy day</p>
+                        </button>
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Write a poem about artificial intelligence">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Write a poem</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">About artificial intelligence</p>
+                        </button>
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Plan a healthy meal for weight loss">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Plan a healthy meal</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">For weight loss</p>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4">
+                <div class="max-w-3xl mx-auto">
+                    <div class="relative">
+                        <textarea
+                            id="message-input"
+                            placeholder="Message"
+                            rows="1"
+                            class="w-full px-4 py-3 pr-20 bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 focus:border-primary-500 dark:focus:border-primary-400 outline-none resize-none transition-all duration-200"
+                        ></textarea>
+                        <div class="absolute right-3 bottom-3 flex items-center space-x-2">
+                            <input type="file" id="gallery-input" accept="image/*" class="hidden">
+                            <button id="gallery-btn" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200 p-1.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-600">
+                                <i data-lucide="image" class="w-5 h-5"></i>
+                            </button>
+                            <button id="checkmark-btn" class="hidden text-primary-500 dark:text-primary-400 p-1.5">
+                                <i data-lucide="check" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between mt-3">
+                        <p class="text-xs text-gray-500 dark:text-gray-400">CodeluxeAI can make mistakes. Double check important information.</p>
+                        <button id="send-btn" class="flex items-center justify-center w-10 h-10 rounded-full bg-primary-500 text-white hover:bg-primary-600 dark:hover:bg-primary-400 disabled:bg-gray-300 dark:disabled:bg-gray-600 disabled:text-gray-500 dark:disabled:text-gray-400 transition-colors duration-200" disabled>
+                            <i data-lucide="send" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        // DOM elements
+        const htmlElement = document.documentElement;
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const openSidebarBtn = document.getElementById('open-sidebar');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+        const newChatBtn = document.getElementById('new-chat-btn');
+        const newChatMobileBtn = document.getElementById('new-chat-mobile');
+        const chatContainer = document.getElementById('chat-container');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const galleryBtn = document.getElementById('gallery-btn');
+        const checkmarkBtn = document.getElementById('checkmark-btn');
+        const galleryInput = document.getElementById('gallery-input');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const themeIconSun = document.getElementById('theme-icon-sun');
+        const themeIconMoon = document.getElementById('theme-icon-moon');
+        const mainContentArea = document.querySelector('.flex-1.flex.flex-col.overflow-hidden');
+        const suggestionButtons = document.querySelectorAll('.suggestion-btn');
+
+        // Gemini API Key and Endpoint
+        const GEMINI_API_KEY = 'AIzaSyCqsASbw2mXQLOmXI3eGGp3jGdF_wiW4W8';
+        const GEMINI_API_ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+
+        // --- Theme Management ---
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.documentElement.classList.add('dark');
+                document.body.style.backgroundColor = '#111827';
+                themeIconSun.classList.add('hidden');
+                themeIconMoon.classList.remove('hidden');
+                sidebar.style.backgroundColor = '#1f2937';
+                chatContainer.style.backgroundColor = '#111827';
+                mainContentArea.style.backgroundColor = '#111827';
+                document.querySelectorAll('.bg-white.dark\\:bg-gray-800').forEach(el => {
+                    el.style.backgroundColor = '#1f2937';
+                });
+            } else {
+                document.documentElement.classList.remove('dark');
+                document.body.style.backgroundColor = '#f9fafb';
+                themeIconSun.classList.remove('hidden');
+                themeIconMoon.classList.add('hidden');
+                sidebar.style.backgroundColor = '#ffffff';
+                chatContainer.style.backgroundColor = '#f9fafb';
+                mainContentArea.style.backgroundColor = '#f9fafb';
+                document.querySelectorAll('.bg-white.dark\\:bg-gray-800').forEach(el => {
+                    el.style.backgroundColor = '#ffffff';
+                });
+            }
+        }
+
+        themeToggleBtn.addEventListener('click', () => {
+            const isDarkMode = document.documentElement.classList.toggle('dark');
+            const newTheme = isDarkMode ? 'dark' : 'light';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        });
+
+        const savedTheme = localStorage.getItem('theme');
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        } else if (prefersDark) {
+            applyTheme('dark');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            applyTheme('light');
+            localStorage.setItem('theme', 'light');
+        }
+
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
+        });
+
+        // --- Sidebar Controls ---
+        function openMobileSidebar() {
+            sidebar.classList.remove('-translate-x-full');
+            sidebarOverlay.classList.remove('opacity-0', 'pointer-events-none');
+            sidebarOverlay.classList.add('opacity-100');
+        }
+
+        function closeMobileSidebar() {
+            sidebar.classList.add('-translate-x-full');
+            sidebarOverlay.classList.add('opacity-0', 'pointer-events-none');
+            sidebarOverlay.classList.remove('opacity-100');
+        }
+
+        if (openSidebarBtn) openSidebarBtn.addEventListener('click', openMobileSidebar);
+        if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeMobileSidebar);
+        if (sidebarOverlay) sidebarOverlay.addEventListener('click', closeMobileSidebar);
+
+        function handleResize() {
+            if (window.innerWidth >= 768) {
+                closeMobileSidebar();
+                sidebar.classList.remove('-translate-x-full');
+                mainContentArea.classList.add('md:ml-64');
+            } else {
+                mainContentArea.classList.remove('md:ml-64');
+            }
+        }
+
+        window.addEventListener('resize', handleResize);
+        document.addEventListener('DOMContentLoaded', handleResize);
+
+        // --- Chat Functionality ---
+        function startNewChat() {
+            const initialWelcomeHTML = `
+                <div class="max-w-3xl mx-auto mb-8 text-center" id="welcome-message">
+                    <img src="https://i.ibb.co/PGM0QsKH/x.jpg"
+                         alt="CodeluxeAI Bot Large"
+                         class="w-16 h-16 rounded-full Ossama-cover mx-auto mb-4"
+                         onerror="this.onerror=null; this.src='https://placehold.co/64x64/800080/white?text=AI';">
+                    <h1 class="text-2xl font-medium text-gray-900 dark:text-gray-100 mb-2">Hello! I'm CodeluxeAI</h1>
+                    <p class="text-gray-600 dark:text-gray-300 mb-6">How can I help you today?</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-w-md mx-auto" id="suggestion-buttons">
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Explain quantum computing in simple terms">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Explain quantum computing</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">In simple terms</p>
+                        </button>
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Suggest fun activities for a rainy day">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Suggest fun activities</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">For a rainy day</p>
+                        </button>
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Write a poem about artificial intelligence">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Write a poem</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">About artificial intelligence</p>
+                        </button>
+                        <button class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm text-left hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 suggestion-btn" data-message="Plan a healthy meal for weight loss">
+                            <p class="font-medium text-gray-900 dark:text-gray-100">Plan a healthy meal</p>
+                            <p class="text-gray-500 dark:text-gray-400 text-xs">For weight loss</p>
+                        </button>
+                    </div>
+                </div>`;
+            chatContainer.innerHTML = initialWelcomeHTML;
+            lucide.createIcons();
+            if (window.innerWidth < 768) {
+                closeMobileSidebar();
+            }
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+            sendBtn.disabled = true;
+            attachSuggestionListeners();
+        }
+
+        newChatBtn.addEventListener('click', startNewChat);
+        newChatMobileBtn.addEventListener('click', startNewChat);
+
+        // Auto-resize textarea and enable/disable send button
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+            sendBtn.disabled = this.value.trim() === '';
+        });
+
+        // Gallery button functionality
+        galleryBtn.addEventListener('click', () => {
+            galleryInput.click();
+        });
+
+        galleryInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                if (!file.type.startsWith('image/')) {
+                    console.warn("Selected file is not an image.");
+                    galleryInput.value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    console.log("Image selected (base64):", event.target.result.substring(0,100) + "...");
+                    galleryBtn.classList.add('hidden');
+                    checkmarkBtn.classList.remove('hidden');
+                    setTimeout(() => {
+                        galleryBtn.classList.remove('hidden');
+                        checkmarkBtn.classList.add('hidden');
+                        galleryInput.value = '';
+                    }, 3000);
+                };
+                reader.onerror = function() {
+                    console.error("Error reading file.");
+                    galleryInput.value = '';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Send button functionality
+        sendBtn.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            if (message) {
+                appendMessage(message, 'user');
+                sendToGeminiAPI(message);
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+                sendBtn.disabled = true;
+            }
+        });
+
+        // Attach listeners to suggestion buttons
+        function attachSuggestionListeners() {
+            const suggestionButtons = document.querySelectorAll('.suggestion-btn');
+            suggestionButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const message = button.getAttribute('data-message');
+                    appendMessage(message, 'user');
+                    sendToGeminiAPI(message);
+                });
+            });
+        }
+
+        // Attach suggestion listeners on initial load
+        attachSuggestionListeners();
+
+        function appendMessage(text, sender) {
+            const welcomeMessage = document.getElementById('welcome-message');
+            if (welcomeMessage) {
+                welcomeMessage.remove();
+            }
+
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('flex', 'mb-4', 'max-w-3xl', 'mx-auto', 'items-start');
+
+            let contentHTML = marked.parse(text.replace(/</g, "&lt;").replace(/>/g, "&gt;"), { breaks: true, gfm: true });
+
+            const aiAvatarHTML = `
+                <img src="https://i.ibb.co/PGM0QsKH/x.jpg"
+                     alt="CodeluxeAI Bot" class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                     onerror="this.onerror=null; this.src='https://placehold.co/32x32/800080/white?text=AI';">
+            `;
+            const userAvatarHTML = `
+                <div class="w-8 h-8 rounded-full flex items-center justify-center ml-2 flex-shrink-0" style="background: linear-gradient(135deg, #3b82f6 0%, #10b981 100%);">
+                    <i data-lucide="user" class="w-4 h-4 text-white"></i>
+                </div>`;
+
+            if (sender === 'user') {
+                messageElement.classList.add('justify-end');
+                messageElement.innerHTML = `
+                    <div class="bg-primary-500 text-white p-3 rounded-lg rounded-br-none max-w-[calc(100%-3rem)] message-content">
+                        ${contentHTML}
+                    </div>
+                    ${userAvatarHTML}
+                `;
+            } else {
+                messageElement.classList.add('justify-start');
+                messageElement.innerHTML = `
+                    ${aiAvatarHTML}
+                    <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-3 rounded-lg rounded-bl-none border border-gray-200 dark:border-gray-700 ml-2 max-w-[calc(100%-3rem)] message-content">
+                        ${contentHTML}
+                    </div>
+                `;
+            }
+            chatContainer.appendChild(messageElement);
+            lucide.createIcons();
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function showTypingIndicator() {
+            const existingIndicator = chatContainer.querySelector('.typing-indicator-container');
+            if (existingIndicator) return;
+
+            const typingElement = document.createElement('div');
+            typingElement.classList.add('flex', 'mb-4', 'max-w-3xl', 'mx-auto', 'justify-start', 'typing-indicator-container', 'items-start');
+            typingElement.innerHTML = `
+                <img src="https://i.ibb.co/PGM0QsKH/x.jpg"
+                     alt="CodeluxeAI Bot Typing" class="w-8 h-8 rounded-full object-cover flex-shrink-0"
+                     onerror="this.onerror=null; this.src='https://placehold.co/32x32/800080/white?text=AI';">
+                <div class="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 p-3 rounded-lg rounded-bl-none border border-gray-200 dark:border-gray-700 ml-2">
+                    <div class="typing-indicator">
+                        <span></span><span></span><span></span>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(typingElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function removeTypingIndicator() {
+            const typingElement = chatContainer.querySelector('.typing-indicator-container');
+            if (typingElement) {
+                typingElement.remove();
+            }
+        }
+
+        async function sendToGeminiAPI(message) {
+            showTypingIndicator();
+            try {
+                const response = await fetch(`${GEMINI_API_ENDPOINT}?key=${GEMINI_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: message
+                            }]
+                        }],
+                        generationConfig: {
+                            temperature: 0.7,
+                            topP: 0.8,
+                            topK: 40,
+                            maxOutputTokens: 1024
+                        }
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error?.message || 'Unknown error'}`);
+                }
+
+                const data = await response.json();
+                const aiResponse = data.candidates?.[0]?.content?.parts?.[0]?.text || "Sorry, I couldn't generate a response. Please try again.";
+                removeTypingIndicator();
+                appendMessage(aiResponse, 'ai');
+            } catch (error) {
+                console.error('Error fetching from Gemini API:', error.message);
+                removeTypingIndicator();
+                let errorMessage = "Sorry, there was an error processing your request. ";
+                if (error.message.includes('403')) {
+                    errorMessage += "The API key may be invalid or lack permissions. Please check the API key.";
+                } else if (error.message.includes('429')) {
+                    errorMessage += "Rate limit exceeded. Please try again later.";
+                } else {
+                    errorMessage += "Please check the console for details or try again later.";
+                }
+                appendMessage(errorMessage, 'ai');
+            }
+        }
+    </script>
+</body>
+</html>
